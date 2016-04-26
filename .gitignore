@@ -24,3 +24,9 @@ ExportedObj/
 
 # Unity3D Generated File On Crash Reports
 sysinfo.txt
+*.meta
+Assets/GoldenSkullStudios/
+Assets/TimeFantasy_RPG_Tiles/
+ProjectSettings/
+*.prefab
+*.unity
