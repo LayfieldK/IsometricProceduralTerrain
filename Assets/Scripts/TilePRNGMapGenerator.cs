@@ -62,7 +62,7 @@ public class TilePRNGMapGenerator : MonoBehaviour {
 
                             SpriteRenderer spriteRenderer = newTile.GetComponent<SpriteRenderer>();
                             spriteRenderer.sprite = tileTerrain.sprite;
-                            spriteRenderer.sortingOrder = sortingOrderIndex;
+                            spriteRenderer.sortingOrder = ((x + 1) * (y + 1) ) + z ;
                             sortingOrderIndex++;
                         }
                         
