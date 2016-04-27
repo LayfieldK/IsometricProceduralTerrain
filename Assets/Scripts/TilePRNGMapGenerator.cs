@@ -7,6 +7,9 @@ public class TilePRNGMapGenerator : MonoBehaviour {
     public TileMap[] maps;
     public int mapIndex;
 
+    public enum DrawMode { Classic, Smooth }
+    public DrawMode drawMode;
+
     public Transform tileSprite;
     public float isometricTileHeight;
     public float isometricTileWidth;
@@ -41,7 +44,6 @@ public class TilePRNGMapGenerator : MonoBehaviour {
         mapHolder.parent = transform;
 
         //spawning tiles
-        int sortingOrderIndex = 0;
         for (int x = 0; x < currentMap.mapSize.x; x++)
         {
             for (int y = 0; y < currentMap.mapSize.y; y++)
@@ -54,16 +56,27 @@ public class TilePRNGMapGenerator : MonoBehaviour {
                     {
                         tileTerrain = regions[i];
                         Vector2 tilePosition = CoordToPosition(x, y);
-                        for (int z = 0; z < Mathf.RoundToInt(currentMap.tileHeightCurve.Evaluate(tileHeight)*10); z++)
+                        float evaluatedHeight = currentMap.tileHeightCurve.Evaluate(tileHeight) * 10;
+                        int z = 0;
+                        for (z = 0; z < Mathf.FloorToInt(evaluatedHeight); z++)
                         {
-                            Transform newTile = Instantiate(tileSprite, tilePosition + (new Vector2(0f,.5f) * z), Quaternion.identity) as Transform;
+                            Transform newTile = Instantiate(tileSprite, tilePosition + (new Vector2(0f, currentMap.heightMultiplier) * z), Quaternion.identity) as Transform;
 
                             newTile.parent = mapHolder;
 
                             SpriteRenderer spriteRenderer = newTile.GetComponent<SpriteRenderer>();
                             spriteRenderer.sprite = tileTerrain.sprite;
                             spriteRenderer.sortingOrder = ((x + 1) * (y + 1) ) + z ;
-                            sortingOrderIndex++;
+                        }
+                        if (drawMode == DrawMode.Smooth && evaluatedHeight % 1 != 0f)
+                        {
+                            Transform newTile = Instantiate(tileSprite, tilePosition + (new Vector2(0f, currentMap.heightMultiplier) * (z-1)) + new Vector2(0f, (evaluatedHeight % 1) * currentMap.heightMultiplier), Quaternion.identity) as Transform;
+
+                            newTile.parent = mapHolder;
+
+                            SpriteRenderer spriteRenderer = newTile.GetComponent<SpriteRenderer>();
+                            spriteRenderer.sprite = tileTerrain.sprite;
+                            spriteRenderer.sortingOrder = ((x + 1) * (y + 1)) + z + 1;
                         }
                         
                         break;
@@ -81,7 +94,7 @@ public class TilePRNGMapGenerator : MonoBehaviour {
 
     Vector2 CoordToPosition(int x, int y)
     {
-        float zeroX = 0f +.5f * x - .5f * y;
+        float zeroX = 0f + .5f * x - .5f * y;
         float zeroY = (.25f * currentMap.mapSize.y + .25f * currentMap.mapSize.x) / 2f  -.25f * y - .25f * x ;
         return new Vector2(zeroX, zeroY);
     }
@@ -111,7 +124,8 @@ public class TilePRNGMapGenerator : MonoBehaviour {
         public Vector2 offset;
         public AnimationCurve tileHeightCurve;
         public int seed;
-        public float heightMultiplier;
+        [Range(0, .65f)]
+        public float heightMultiplier = .5f;
 
         public Coord mapCenter
         {
@@ -149,5 +163,16 @@ public class TilePRNGMapGenerator : MonoBehaviour {
         public string name;
         public float terrainHeight;
         public Sprite sprite;
+        public FoliageType[] Foliage;
     }
+
+    [System.Serializable]
+    public struct FoliageType
+    {
+        public string name;
+        public float weight;
+        public Sprite sprite;
+    }
+
+
 }
